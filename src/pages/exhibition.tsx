@@ -9,6 +9,10 @@ import {
   Typography,
 } from "@mui/material";
 
+import type { ExhibitionForm } from "../types/exhibition.types";
+import { useAddExhibition } from "../hooks/useExhibition"; 
+import { useForm } from "react-hook-form";
+
 const eventTypes = [
   "Art Fair",
   "Exhibition",
@@ -19,8 +23,88 @@ const eventTypes = [
 ];
 
 export default function AddExhibition() {
+
+  const mutation = useAddExhibition();
+
+  const defaultExhibitionData: ExhibitionForm = {
+    title: "",
+    eventType: "",
+    organizer: "",
+    venue: "",
+    city: "",
+    state: "",
+    country: "",
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date().toISOString().split("T")[0],
+    achievements: "",
+    description: "",
+    certificate: null,
+    eventImages: [],
+  };
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<ExhibitionForm>({
+    defaultValues: defaultExhibitionData,
+  });
+
+  console.log("Form Errors:", errors);
+  
+  const handleCertificateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setValue("certificate", e.target.files[0]);
+    }
+  };
+
+  const handleEventImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setValue("eventImages", Array.from(e.target.files));
+    }
+  };
+
+  const onSubmit = (data: ExhibitionForm) => {
+    console.log("Form Data:", data);
+    const formData = new FormData();
+    
+    formData.append("artist", "6a4807d5df0d709bdb5a9ece");
+    formData.append("title", data.title);
+    formData.append("eventType", data.eventType);
+    formData.append("organizer", data.organizer);
+    formData.append("venue", data.venue);
+    formData.append("city", data.city);
+    formData.append("state", data.state);
+    formData.append("country", data.country);
+    formData.append("startDate", data.startDate);
+    formData.append("endDate", data.endDate);
+    formData.append("achievements", data.achievements);
+    formData.append("description", data.description);
+
+    if (data.certificate) {
+      formData.append("certificate", data.certificate);
+    }
+
+    data.eventImages.forEach((image) => {
+      formData.append("eventImages", image);
+    });
+
+    mutation.mutate(formData, {
+      onError: (error) => {
+        console.error("Error submitting form:", error);
+      },
+      onSuccess: (response) => {
+        console.log("Exhibition created successfully:", response);
+      }
+    });
+  };
+
   return (
-    <Box sx={{ p: 4, bgcolor: "#f5f5f5" }}>
+    <Box sx={{ p: 4, bgcolor: "#f5f5f5" }}
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
         <CardContent>
 
@@ -47,6 +131,7 @@ export default function AddExhibition() {
               label="Title"
               fullWidth
               required
+              {...register("title", { required: "Title is required" })}
             />
 
             <TextField
@@ -54,6 +139,7 @@ export default function AddExhibition() {
               label="Event Type"
               fullWidth
               required
+              {...register("eventType", { required: "Event Type is required" })}
             >
               {eventTypes.map((item) => (
                 <MenuItem key={item} value={item}>
@@ -65,26 +151,31 @@ export default function AddExhibition() {
             <TextField
               label="Organizer"
               fullWidth
+              {...register("organizer", { required: "Organizer is required" })}
             />
 
             <TextField
               label="Venue"
               fullWidth
+              {...register("venue", { required: "Venue is required" })}
             />
 
             <TextField
               label="City"
               fullWidth
+              {...register("city", { required: "City is required" })}
             />
 
             <TextField
               label="State"
               fullWidth
+              {...register("state", { required: "State is required" })}
             />
 
             <TextField
               label="Country"
               fullWidth
+              {...register("country", { required: "Country is required" })}
             />
 
             <TextField
@@ -92,6 +183,7 @@ export default function AddExhibition() {
               label="Start Date"
               // InputLabelProps={{ shrink: true }}
               fullWidth
+              {...register("startDate", { required: "Start Date is required" })}
             />
 
             <TextField
@@ -99,18 +191,21 @@ export default function AddExhibition() {
               label="End Date"
               // InputLabelProps={{ shrink: true }}
               fullWidth
+              {...register("endDate", { required: "End Date is required" })}
             />
 
             <TextField
               label="Achievement"
               fullWidth
+              {...register("achievements", { required: "Achievement is required" })}
             />
 
-            <TextField  
+            {/* <TextField  
               type="number"
               label="Display Order"
               fullWidth
-            />
+              {...register("displayOrder", { required: "Display Order is required" })}
+            /> */}
           </Box>
 
           <Box sx={{ mt: 3 }}>
@@ -119,6 +214,7 @@ export default function AddExhibition() {
               multiline
               rows={5}
               fullWidth
+              {...register("description", { required: "Description is required" })}
             />
           </Box>
 
@@ -136,7 +232,7 @@ export default function AddExhibition() {
             component="label"
           >
             Upload Certificate
-            <input hidden type="file" />
+            <input hidden type="file" onChange={handleCertificateUpload} />
           </Button>
 
           <Divider sx={{ my: 4 }} />
@@ -153,7 +249,7 @@ export default function AddExhibition() {
             component="label"
           >
             Upload Event Images
-            <input hidden type="file" multiple />
+            <input hidden type="file" multiple onChange={handleEventImagesUpload} />
           </Button>
 
           <Box
@@ -168,8 +264,12 @@ export default function AddExhibition() {
               Cancel
             </Button>
 
-            <Button variant="contained">
-              Save Exhibition
+            <Button 
+              variant="contained"
+              type="submit"
+              disabled={mutation.isPending}  
+            >
+              {mutation.isPending ? "Submitting..." : "Submit"}
             </Button>
           </Box>
 

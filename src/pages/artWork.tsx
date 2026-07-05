@@ -10,6 +10,9 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import type { ArtworkForm } from "../types/artwork.types";
+import { useForm } from "react-hook-form";
+import { useAddArtWork } from "../hooks/useArtwork";
 
 const categories = [
   "Painting",
@@ -24,8 +27,75 @@ const categories = [
 const status = ["Available", "Sold", "Reserved"];
 
 export default function Artwork() {
+  const mutation = useAddArtWork();
+
+  const defaultValues: ArtworkForm = {
+    title: "",
+    slug: "",
+    category: "",
+    medium: "",
+    yearCreated: new Date().getFullYear(),
+    tags: "",
+    description: "",
+    price: 0,
+    status: "Available",
+    images: [],
+    featuredWork: false,
+    isForSale: true,
+  };
+
+  const {
+      register,
+      handleSubmit,
+      setValue,
+    } = useForm<ArtworkForm>({
+      defaultValues,
+    });
+
+  const handleArtWorkImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setValue("images", Array.from(e.target.files));
+    }
+  };
+
+  const onSubmit = (data: ArtworkForm) => {
+    console.log("Form Data:", data);
+    const formData = new FormData();
+    
+    formData.append("artist", "6a4807d5df0d709bdb5a9ece");
+    formData.append("title", data.title);
+    formData.append("slug", data.slug);
+    formData.append("category", data.category);
+    formData.append("medium", data.medium);
+    formData.append("yearCreated", data.yearCreated.toString());
+    formData.append("tags", data.tags);
+    formData.append("description", data.description);
+    formData.append("price", data.price.toString());
+    formData.append("status", data.status);
+    formData.append("featuredWork", data.featuredWork.toString());
+    formData.append("isForSale", data.isForSale.toString());
+
+    data.images.forEach((image) => {
+      formData.append(`images`, image);
+    });
+
+    mutation.mutate(formData, {
+      onSuccess: (response) => {
+        console.log("Artwork created successfully:", response);
+      },
+      onError: (error) => {
+        console.error("Error creating artwork:", error);
+      },
+    });
+
+  }
+
   return (
-    <Box sx={{ p: 4, bgcolor: "#f5f5f5" }}>
+    <Box 
+      sx={{ p: 4, bgcolor: "#f5f5f5" }}
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
         <CardContent>
 
@@ -58,12 +128,14 @@ export default function Artwork() {
               label="Artwork Title"
               fullWidth
               required
+              {...register("title", { required: true })}
             />
 
             <TextField
               label="Slug"
               fullWidth
               required
+              {...register("slug", { required: true })}
             />
 
             <TextField
@@ -71,6 +143,7 @@ export default function Artwork() {
               label="Category"
               fullWidth
               required
+              {...register("category", { required: true })}
             >
               {categories.map((item) => (
                 <MenuItem key={item} value={item}>
@@ -83,18 +156,21 @@ export default function Artwork() {
               label="Medium"
               fullWidth
               placeholder="Oil on Canvas"
+              {...register("medium")}
             />
 
             <TextField
               label="Year Created"
               type="number"
               fullWidth
+              {...register("yearCreated", { valueAsNumber: true })}
             />
 
             <TextField
               label="Tags"
               fullWidth
               placeholder="Nature, Portrait, Modern"
+              {...register("tags")}
             />
           </Box>
 
@@ -105,6 +181,7 @@ export default function Artwork() {
               rows={5}
               fullWidth
               required
+              {...register("description", { required: true })}
             />
           </Box>
 
@@ -112,7 +189,7 @@ export default function Artwork() {
 
           {/* Dimensions */}
 
-          <Typography variant="h6" sx={{ mb: 2 }}>
+          {/* <Typography variant="h6" sx={{ mb: 2 }}>
             Dimensions
           </Typography>
 
@@ -145,7 +222,7 @@ export default function Artwork() {
             />
           </Box>
 
-          <Divider sx={{ my: 4 }} />
+          <Divider sx={{ my: 4 }} /> */}
 
           {/* Pricing */}
 
@@ -167,6 +244,7 @@ export default function Artwork() {
               label="Price"
               type="number"
               fullWidth
+              {...register("price", { valueAsNumber: true })}
             />
 
             <TextField
@@ -174,6 +252,7 @@ export default function Artwork() {
               label="Status"
               defaultValue="Available"
               fullWidth
+              {...register("status")}
             >
               {status.map((item) => (
                 <MenuItem key={item} value={item}>
@@ -196,12 +275,12 @@ export default function Artwork() {
             component="label"
           >
             Upload Images
-            <input hidden type="file" multiple />
+            <input hidden type="file" multiple onChange={handleArtWorkImage} />
           </Button>
 
           <Divider sx={{ my: 4 }} />
 
-          <Typography variant="h6" sx={{ mb: 2 }}>
+          {/* <Typography variant="h6" sx={{ mb: 2 }}>
             Artwork Video
           </Typography>
 
@@ -213,7 +292,7 @@ export default function Artwork() {
             <input hidden type="file" accept="video/*" />
           </Button>
 
-          <Divider sx={{ my: 4 }} />
+          <Divider sx={{ my: 4 }} /> */}
 
           {/* Options */}
 
@@ -229,12 +308,12 @@ export default function Artwork() {
             }}
           >
             <FormControlLabel
-              control={<Checkbox />}
+              control={<Checkbox {...register("featuredWork")} />}
               label="Featured Artwork"
             />
 
             <FormControlLabel
-              control={<Checkbox />}
+              control={<Checkbox {...register("isForSale")} />}
               label="Available For Sale"
             />
           </Box>
@@ -251,8 +330,12 @@ export default function Artwork() {
               Cancel
             </Button>
 
-            <Button variant="contained">
-              Save Artwork
+            <Button 
+              variant="contained"
+              type="submit"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? "Submitting..." : "Submit"}
             </Button>
           </Box>
 
