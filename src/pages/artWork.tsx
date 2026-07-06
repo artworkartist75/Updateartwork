@@ -85,7 +85,6 @@ export default function Artwork() {
   const {data: artworkData, isLoading, isError } = useGetArtWork();
   const [open, setOpen] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState<ArtworkToApi | null>(null);
-  let createEdit = "NewAdd";
   
   if (isLoading) {
     return <h2>Loading...</h2>;
@@ -98,7 +97,6 @@ export default function Artwork() {
   }
   const handleEdit = (artwork: ArtworkToApi) => {
       console.log("selected ",artwork);
-      createEdit = "Update";
       setSelectedArtwork(artwork);
       setOpen(true);
   };
