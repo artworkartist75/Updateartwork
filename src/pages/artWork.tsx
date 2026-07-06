@@ -1,346 +1,341 @@
 import {
-  Box,
   Button,
-  Card,
-  CardContent,
-  Checkbox,
-  Divider,
-  FormControlLabel,
-  MenuItem,
-  TextField,
-  Typography,
+  Grid
 } from "@mui/material";
-import type { ArtworkForm } from "../types/artwork.types";
-import { useForm } from "react-hook-form";
-import { useAddArtWork } from "../hooks/useArtwork";
+import type { ArtworkToApi } from "../types/artwork.types";
+import { useGetArtWork } from "../hooks/useArtwork";
+import { useState } from "react";
+import FormModal from "../utils/subformModel";
+import ArtworkFormData from "../components/artworkbtn"
+import ArtworkCard from "../components/artistCart";
 
-const categories = [
-  "Painting",
-  "Sketch",
-  "Digital Art",
-  "Illustration",
-  "Photography",
-  "Sculpture",
-  "Mixed Media",
-];
+// const categories = [
+//   "Painting",
+//   "Sketch",
+//   "Digital Art",
+//   "Illustration",
+//   "Photography",
+//   "Sculpture",
+//   "Mixed Media",
+// ];
 
-const status = ["Available", "Sold", "Reserved"];
+// const status = ["Available", "Sold", "Reserved"];
+
 
 export default function Artwork() {
-  const mutation = useAddArtWork();
 
-  const defaultValues: ArtworkForm = {
-    title: "",
-    slug: "",
-    category: "",
-    medium: "",
-    yearCreated: new Date().getFullYear(),
-    tags: "",
-    description: "",
-    price: 0,
-    status: "Available",
-    images: [],
-    featuredWork: false,
-    isForSale: true,
-  };
+  // const defaultValues: ArtworkForm = {
+  //   title: "",
+  //   category: "",
+  //   medium: "",
+  //   yearCreated: new Date().getFullYear(),
+  //   tags: "",
+  //   description: "",
+  //   price: 0,
+  //   status: "Available",
+  //   images: [],
+  //   featuredWork: false,
+  //   isForSale: true,
+  // };
 
-  const {
-      register,
-      handleSubmit,
-      setValue,
-    } = useForm<ArtworkForm>({
-      defaultValues,
-    });
+  // const {
+  //     register,
+  //     handleSubmit,
+  //     setValue,
+  //   } = useForm<ArtworkForm>({
+  //     defaultValues,
+  //   });
 
-  const handleArtWorkImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setValue("images", Array.from(e.target.files));
-    }
-  };
+  // const handleArtWorkImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files) {
+  //     setValue("images", Array.from(e.target.files));
+  //   }
+  // };
 
-  const onSubmit = (data: ArtworkForm) => {
-    console.log("Form Data:", data);
-    const formData = new FormData();
+  // const onSubmit = (data: ArtworkForm) => {
+  //   console.log("Form Data:", data);
+  //   const formData = new FormData();
     
-    formData.append("artist", "6a4807d5df0d709bdb5a9ece");
-    formData.append("title", data.title);
-    formData.append("slug", data.slug);
-    formData.append("category", data.category);
-    formData.append("medium", data.medium);
-    formData.append("yearCreated", data.yearCreated.toString());
-    formData.append("tags", data.tags);
-    formData.append("description", data.description);
-    formData.append("price", data.price.toString());
-    formData.append("status", data.status);
-    formData.append("featuredWork", data.featuredWork.toString());
-    formData.append("isForSale", data.isForSale.toString());
+  //   formData.append("artist", "6a4807d5df0d709bdb5a9ece");
+  //   formData.append("title", data.title);
+  //   formData.append("category", data.category);
+  //   formData.append("medium", data.medium);
+  //   formData.append("yearCreated", data.yearCreated.toString());
+  //   formData.append("tags", data.tags);
+  //   formData.append("description", data.description);
+  //   formData.append("price", data.price.toString());
+  //   formData.append("status", data.status);
+  //   formData.append("featuredWork", data.featuredWork.toString());
+  //   formData.append("isForSale", data.isForSale.toString());
 
-    data.images.forEach((image) => {
-      formData.append(`images`, image);
-    });
+  //   data.images.forEach((image) => {
+  //     formData.append(`images`, image);
+  //   });
 
-    mutation.mutate(formData, {
-      onSuccess: (response) => {
-        console.log("Artwork created successfully:", response);
-      },
-      onError: (error) => {
-        console.error("Error creating artwork:", error);
-      },
-    });
+  //   mutation.mutate(formData, {
+  //     onSuccess: (response) => {
+  //       console.log("Artwork created successfully:", response);
+  //     },
+  //     onError: (error) => {
+  //       console.error("Error creating artwork:", error);
+  //     },
+  //   });
 
+  // }
+  const {data: artworkData, isLoading, isError } = useGetArtWork();
+  const [open, setOpen] = useState(false);
+  const [selectedArtwork, setSelectedArtwork] = useState<ArtworkToApi | null>(null);
+  let createEdit = "NewAdd";
+  
+  if (isLoading) {
+    return <h2>Loading...</h2>;
   }
+  if (isError || !artworkData) {
+    return <h2>Something went wrong</h2>;
+  }
+  const handleClose = () => {
+    setOpen(false);
+  }
+  const handleEdit = (artwork: ArtworkToApi) => {
+      console.log("selected ",artwork);
+      createEdit = "Update";
+      setSelectedArtwork(artwork);
+      setOpen(true);
+  };
 
   return (
-    <Box 
-      sx={{ p: 4, bgcolor: "#f5f5f5" }}
-      component="form"
-      onSubmit={handleSubmit(onSubmit)}
-    >
-      <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
-        <CardContent>
+    <>
+      <Button
+          variant="contained"
+          onClick={() => setOpen(true)}
+      >
+          Add Artwork
+      </Button>
 
-          <Typography
-            variant="h4"
-            sx={{ fontWeight: 700, mb: 3 }}
-          >
-            Add Artwork
-          </Typography>
+      <FormModal
+          open={open}
+          title="Edit Artwork"
+          onClose={handleClose}
+      >
+          <ArtworkFormData
+            mode="update"
+            artwork={selectedArtwork!}
+          />
+      </FormModal>
 
-          <Divider sx={{ mb: 4 }} />
+      <Grid container spacing={3}>
+        {artworkData.map((art: ArtworkToApi) => (
+          <Grid key={art._id} size={{ xs: 12, sm: 6, md: 4 }}>
+            <ArtworkCard artwork={art} onEdit={handleEdit} />
+          </Grid>
+        ))}
+      </Grid>
 
-          {/* Basic Information */}
+    </>
+    // <Box 
+    //   sx={{ p: 4, bgcolor: "#f5f5f5" }}
+    //   component="form"
+    //   onSubmit={handleSubmit(onSubmit)}
+    // >
+    //   <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
+    //     <CardContent>
 
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Basic Information
-          </Typography>
+    //       <Typography
+    //         variant="h4"
+    //         sx={{ fontWeight: 700, mb: 3 }}
+    //       >
+    //         Add Artwork
+    //       </Typography>
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "1fr 1fr",
-              },
-              gap: 3,
-            }}
-          >
-            <TextField
-              label="Artwork Title"
-              fullWidth
-              required
-              {...register("title", { required: true })}
-            />
+    //       <Divider sx={{ mb: 4 }} />
 
-            <TextField
-              label="Slug"
-              fullWidth
-              required
-              {...register("slug", { required: true })}
-            />
+    //       {/* Basic Information */}
 
-            <TextField
-              select
-              label="Category"
-              fullWidth
-              required
-              {...register("category", { required: true })}
-            >
-              {categories.map((item) => (
-                <MenuItem key={item} value={item}>
-                  {item}
-                </MenuItem>
-              ))}
-            </TextField>
+    //       <Typography variant="h6" sx={{ mb: 2 }}>
+    //         Basic Information
+    //       </Typography>
 
-            <TextField
-              label="Medium"
-              fullWidth
-              placeholder="Oil on Canvas"
-              {...register("medium")}
-            />
+    //       <Box
+    //         sx={{
+    //           display: "grid",
+    //           gridTemplateColumns: {
+    //             xs: "1fr",
+    //             md: "1fr 1fr",
+    //           },
+    //           gap: 3,
+    //         }}
+    //       >
+    //         <TextField
+    //           label="Artwork Title"
+    //           fullWidth
+    //           required
+    //           {...register("title", { required: true })}
+    //         />
 
-            <TextField
-              label="Year Created"
-              type="number"
-              fullWidth
-              {...register("yearCreated", { valueAsNumber: true })}
-            />
+    //         <TextField
+    //           select
+    //           label="Category"
+    //           fullWidth
+    //           required
+    //           {...register("category", { required: true })}
+    //         >
+    //           {categories.map((item) => (
+    //             <MenuItem key={item} value={item}>
+    //               {item}
+    //             </MenuItem>
+    //           ))}
+    //         </TextField>
 
-            <TextField
-              label="Tags"
-              fullWidth
-              placeholder="Nature, Portrait, Modern"
-              {...register("tags")}
-            />
-          </Box>
+    //         <TextField
+    //           label="Medium"
+    //           fullWidth
+    //           placeholder="Oil on Canvas"
+    //           {...register("medium")}
+    //         />
 
-          <Box sx={{ mt: 3 }}>
-            <TextField
-              label="Description"
-              multiline
-              rows={5}
-              fullWidth
-              required
-              {...register("description", { required: true })}
-            />
-          </Box>
+    //         <TextField
+    //           label="Year Created"
+    //           type="number"
+    //           fullWidth
+    //           {...register("yearCreated", { valueAsNumber: true })}
+    //         />
 
-          <Divider sx={{ my: 4 }} />
+    //         <TextField
+    //           label="Tags"
+    //           fullWidth
+    //           placeholder="Nature, Portrait, Modern"
+    //           {...register("tags")}
+    //         />
+    //       </Box>
 
-          {/* Dimensions */}
+    //       <Box sx={{ mt: 3 }}>
+    //         <TextField
+    //           label="Description"
+    //           multiline
+    //           rows={5}
+    //           fullWidth
+    //           required
+    //           {...register("description", { required: true })}
+    //         />
+    //       </Box>
 
-          {/* <Typography variant="h6" sx={{ mb: 2 }}>
-            Dimensions
-          </Typography>
+    //       <Divider sx={{ my: 4 }} />
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "1fr 1fr 1fr",
-              },
-              gap: 3,
-            }}
-          >
-            <TextField
-              label="Width"
-              type="number"
-              fullWidth
-            />
+    //       <Typography variant="h6" sx={{ mb: 2 }}>
+    //         Pricing
+    //       </Typography>
 
-            <TextField
-              label="Height"
-              type="number"
-              fullWidth
-            />
+    //       <Box
+    //         sx={{
+    //           display: "grid",
+    //           gridTemplateColumns: {
+    //             xs: "1fr",
+    //             md: "1fr 1fr",
+    //           },
+    //           gap: 3,
+    //         }}
+    //       >
+    //         <TextField
+    //           label="Price"
+    //           type="number"
+    //           fullWidth
+    //           {...register("price", { valueAsNumber: true })}
+    //         />
 
-            <TextField
-              label="Unit"
-              defaultValue="cm"
-              fullWidth
-            />
-          </Box>
+    //         <TextField
+    //           select
+    //           label="Status"
+    //           defaultValue="Available"
+    //           fullWidth
+    //           {...register("status")}
+    //         >
+    //           {status.map((item) => (
+    //             <MenuItem key={item} value={item}>
+    //               {item}
+    //             </MenuItem>
+    //           ))}
+    //         </TextField>
+    //       </Box>
 
-          <Divider sx={{ my: 4 }} /> */}
+    //       <Divider sx={{ my: 4 }} />
 
-          {/* Pricing */}
+    //       {/* Upload */}
 
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Pricing
-          </Typography>
+    //       <Typography variant="h6" sx={{ mb: 2 }}>
+    //         Artwork Images
+    //       </Typography>
 
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "1fr 1fr",
-              },
-              gap: 3,
-            }}
-          >
-            <TextField
-              label="Price"
-              type="number"
-              fullWidth
-              {...register("price", { valueAsNumber: true })}
-            />
+    //       <Button
+    //         variant="contained"
+    //         component="label"
+    //       >
+    //         Upload Images
+    //         <input hidden type="file" multiple onChange={handleArtWorkImage} />
+    //       </Button>
 
-            <TextField
-              select
-              label="Status"
-              defaultValue="Available"
-              fullWidth
-              {...register("status")}
-            >
-              {status.map((item) => (
-                <MenuItem key={item} value={item}>
-                  {item}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Box>
+    //       <Divider sx={{ my: 4 }} />
 
-          <Divider sx={{ my: 4 }} />
+    //       {/* <Typography variant="h6" sx={{ mb: 2 }}>
+    //         Artwork Video
+    //       </Typography>
 
-          {/* Upload */}
+    //       <Button
+    //         variant="contained"
+    //         component="label"
+    //       >
+    //         Upload Video
+    //         <input hidden type="file" accept="video/*" />
+    //       </Button>
 
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Artwork Images
-          </Typography>
+    //       <Divider sx={{ my: 4 }} /> */}
 
-          <Button
-            variant="contained"
-            component="label"
-          >
-            Upload Images
-            <input hidden type="file" multiple onChange={handleArtWorkImage} />
-          </Button>
+    //       {/* Options */}
 
-          <Divider sx={{ my: 4 }} />
+    //       <Typography variant="h6" sx={{ mb: 2 }}>
+    //         Options
+    //       </Typography>
 
-          {/* <Typography variant="h6" sx={{ mb: 2 }}>
-            Artwork Video
-          </Typography>
+    //       <Box
+    //         sx={{
+    //           display: "flex",
+    //           gap: 4,
+    //           flexWrap: "wrap",
+    //         }}
+    //       >
+    //         <FormControlLabel
+    //           control={<Checkbox {...register("featuredWork")} />}
+    //           label="Featured Artwork"
+    //         />
 
-          <Button
-            variant="contained"
-            component="label"
-          >
-            Upload Video
-            <input hidden type="file" accept="video/*" />
-          </Button>
+    //         <FormControlLabel
+    //           control={<Checkbox {...register("isForSale")} />}
+    //           label="Available For Sale"
+    //         />
+    //       </Box>
 
-          <Divider sx={{ my: 4 }} /> */}
+    //       <Box
+    //         sx={{
+    //           display: "flex",
+    //           justifyContent: "flex-end",
+    //           gap: 2,
+    //           mt: 5,
+    //         }}
+    //       >
+    //         <Button variant="outlined">
+    //           Cancel
+    //         </Button>
 
-          {/* Options */}
+    //         <Button 
+    //           variant="contained"
+    //           type="submit"
+    //           disabled={mutation.isPending}
+    //         >
+    //           {mutation.isPending ? "Submitting..." : "Submit"}
+    //         </Button>
+    //       </Box>
 
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Options
-          </Typography>
-
-          <Box
-            sx={{
-              display: "flex",
-              gap: 4,
-              flexWrap: "wrap",
-            }}
-          >
-            <FormControlLabel
-              control={<Checkbox {...register("featuredWork")} />}
-              label="Featured Artwork"
-            />
-
-            <FormControlLabel
-              control={<Checkbox {...register("isForSale")} />}
-              label="Available For Sale"
-            />
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 2,
-              mt: 5,
-            }}
-          >
-            <Button variant="outlined">
-              Cancel
-            </Button>
-
-            <Button 
-              variant="contained"
-              type="submit"
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? "Submitting..." : "Submit"}
-            </Button>
-          </Box>
-
-        </CardContent>
-      </Card>
-    </Box>
+    //     </CardContent>
+    //   </Card>
+    // </Box>
   );
 }

@@ -11,7 +11,18 @@ export const createArtwork = async (artworkData: any) => {
     return res; 
 }
 
+export const updateArtwork = async ({id , artworkData}:{id:string, artworkData:any}) => {
+    console.log("Artist Data");
+    console.log([...artworkData.entries()]);
+    const res = await axios.put(`${import.meta.env.VITE_API_URL}/Artist/update/artworks/${id}`, artworkData,{
+        headers: {
+        "Content-Type": "multipart/form-data",
+        },
+    });
+    return res.data;
+};
+
 export const getArtwork = async () => {
-    const res = await axios.get(`${import.meta.env.VITE_API_URL}/Artist/artworks`);
-    return res;
+    const res = await axios.get(`${import.meta.env.VITE_API_URL}/Artist/get/artworks`);
+    return res.data.data;
 }

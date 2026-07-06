@@ -22,7 +22,8 @@
     "react-hook-form": "^7.80.0",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.7.0",
-    "react-router-dom": "^7.18.0"
+    "react-router-dom": "^7.18.0",
+    "slugify": "^1.6.9"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
