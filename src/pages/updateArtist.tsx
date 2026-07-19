@@ -1,6 +1,6 @@
 import { useGetArtist } from "../hooks/useArtist";
 import ArtistInfo from "../components/artistInfo";
-import CreateUpdatePage from "../components/createUpdatePage";
+// import CreateUpdatePage from "../components/createUpdatePage";
 
 export default function UpdateArtist() {
 
@@ -17,8 +17,8 @@ export default function UpdateArtist() {
     <> 
       {
         artistData?.length > 0 ? 
-        (<ArtistInfo artist={artistData[0]} />) : 
-        (<CreateUpdatePage mode="create" />) 
+        (<ArtistInfo artist={artistData[0]} />) : (<></>)
+        // (<CreateUpdatePage mode="create" onClose/>) 
       }      
     </>
   );

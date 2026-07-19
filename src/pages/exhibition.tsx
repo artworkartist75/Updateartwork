@@ -64,7 +64,6 @@ export default function AddExhibition() {
             />
           )
         }
-          
       </FormModal>
 
       {!isError && exhibitionData && exhibitionData.length > 0 && (
