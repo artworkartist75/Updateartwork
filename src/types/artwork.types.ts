@@ -56,3 +56,17 @@ export interface ArtworkToApi {
 
 //   __v: number;
 }
+
+export const defaultValues: ArtworkFormType = {
+    title: "",
+    category: "",
+    medium: "",
+    yearCreated: new Date().getFullYear(),
+    tags: "",
+    description: "",
+    price: 0,
+    status: "Available",
+    images: [],
+    featuredWork: false,
+    isForSale: true,
+  };

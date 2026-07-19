@@ -37,7 +37,7 @@ type Props = {
 };
 
 export default function ArtistInfo({ artist }: Props) {
-  // console.log("Artist Info Component - Artist Data:", artist);
+  console.log("Artist Info Component - Artist Data:", artist);
   const [open, setOpen] = useState(false);
   return (
     <Container maxWidth="lg" sx={{ py: 5 }}>
@@ -45,21 +45,25 @@ export default function ArtistInfo({ artist }: Props) {
 
       <Box
         sx={{
-          height: 320,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: 400,
           borderRadius: 3,
           overflow: "hidden",
           mb: 8,
         }}
       >
-        <img
-          src={artist.coverImage}
-          alt={artist.name}
-          width="100%"
-          height="100%"
-          style={{
-            objectFit: "cover",
-          }}
-        />
+        {artist?.coverImage && (
+          <img
+            src={artist.coverImage[0].url}
+            alt={artist.name}
+            width="70%"
+            height="100%"
+            style={{ objectFit: "cover" }}
+            
+          />
+        )}
       </Box>
 
       {/* Profile */}
@@ -72,7 +76,7 @@ export default function ArtistInfo({ artist }: Props) {
         }}
       >
         <Avatar
-          src={artist.profileImage}
+          src={artist.profileImage[0].url}
           sx={{
             width: 170,
             height: 170,

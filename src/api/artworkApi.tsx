@@ -24,5 +24,10 @@ export const updateArtwork = async ({id , artworkData}:{id:string, artworkData:a
 
 export const getArtwork = async () => {
     const res = await axios.get(`${import.meta.env.VITE_API_URL}/Artist/get/artworks`);
+    console.log(res.data.data);
     return res.data.data;
+}
+
+export const deleteArtwork = async (id:string) => {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/Artist/delete/artwork/${id}`);
 }

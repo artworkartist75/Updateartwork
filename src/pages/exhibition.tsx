@@ -1,280 +1,266 @@
 import {
-  Box,
   Button,
-  Card,
-  CardContent,
-  Divider,
-  MenuItem,
-  TextField,
-  Typography,
+  Grid
 } from "@mui/material";
 
-import type { ExhibitionForm } from "../types/exhibition.types";
-import { useAddExhibition } from "../hooks/useExhibition"; 
-import { useForm } from "react-hook-form";
+import type { ExhibitionToApi } from "../types/exhibition.types";
+import { useGetExhibitionList } from "../hooks/useExhibition"; 
+import FormModal from "../utils/subformModel";
+import { useState } from "react";
+import ExhibitionCard from '../components/exhibitionCart';
+import ExhibitionFormData from '../components/exhibitionbtn';
 
-const eventTypes = [
-  "Art Fair",
-  "Exhibition",
-  "Competition",
-  "Workshop",
-  "Seminar",
-  "Festival",
-];
 
 export default function AddExhibition() {
 
-  const mutation = useAddExhibition();
-
-  const defaultExhibitionData: ExhibitionForm = {
-    title: "",
-    eventType: "",
-    organizer: "",
-    venue: "",
-    city: "",
-    state: "",
-    country: "",
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
-    achievements: "",
-    description: "",
-    certificate: null,
-    eventImages: [],
-  };
-
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<ExhibitionForm>({
-    defaultValues: defaultExhibitionData,
-  });
-
-  console.log("Form Errors:", errors);
+  const {data: exhibitionData, isLoading, isError } = useGetExhibitionList();
   
-  const handleCertificateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setValue("certificate", e.target.files[0]);
-    }
+  const [open, setOpen] = useState(false);
+  const [selectedExhibition, setSelectedExhibition] = useState<ExhibitionToApi | null>(null);
+  const [exhibitionMode, setExhibitionMode] = useState<"add" | "edit">("add");
+
+  if (isLoading) {
+    return <h2>Loading...</h2>;
+  }
+
+  const handleClose = () => {
+    setOpen(false);
+  }
+  const handleEdit = (exhibition: ExhibitionToApi) => {
+    console.log("inside edit handle ");
+    setExhibitionMode("edit");
+    console.log("edit handle ", exhibition);
+    setSelectedExhibition(exhibition);
+    setOpen(true);
   };
-
-  const handleEventImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setValue("eventImages", Array.from(e.target.files));
-    }
-  };
-
-  const onSubmit = (data: ExhibitionForm) => {
-    console.log("Form Data:", data);
-    const formData = new FormData();
-    
-    formData.append("artist", "6a4807d5df0d709bdb5a9ece");
-    formData.append("title", data.title);
-    formData.append("eventType", data.eventType);
-    formData.append("organizer", data.organizer);
-    formData.append("venue", data.venue);
-    formData.append("city", data.city);
-    formData.append("state", data.state);
-    formData.append("country", data.country);
-    formData.append("startDate", data.startDate);
-    formData.append("endDate", data.endDate);
-    formData.append("achievements", data.achievements);
-    formData.append("description", data.description);
-
-    if (data.certificate) {
-      formData.append("certificate", data.certificate);
-    }
-
-    data.eventImages.forEach((image) => {
-      formData.append("eventImages", image);
-    });
-
-    mutation.mutate(formData, {
-      onError: (error) => {
-        console.error("Error submitting form:", error);
-      },
-      onSuccess: (response) => {
-        console.log("Exhibition created successfully:", response);
-      }
-    });
-  };
+ 
+  const handleCreate = () => {
+    console.log("inside create handle ");
+    setExhibitionMode("add");
+    setOpen(true);
+  }
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#f5f5f5" }}
-      component="form"
-      onSubmit={handleSubmit(onSubmit)}
-    >
-      <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
-        <CardContent>
+    <>
+      <Button
+          variant="contained"
+          onClick={handleCreate}
+      >
+          Add Exhibition
+      </Button>
 
-          <Typography
-            variant="h4"
-            sx={{ fontWeight: 700, mb: 3 }}
-          >
-            Add Exhibition
-          </Typography>
-
-          <Divider sx={{ mb: 4 }} />
-
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "1fr 1fr",
-              },
-              gap: 3,
-            }}
-          >
-            <TextField
-              label="Title"
-              fullWidth
-              required
-              {...register("title", { required: "Title is required" })}
+      <FormModal
+          open={open}
+          title="Edit Artwork"
+          onClose={handleClose}
+      > 
+        {
+          exhibitionMode === "add" ? 
+          (
+            console.log("Exhibition add"),
+            <ExhibitionFormData
+              mode="create"
+              onClose={handleClose}
             />
-
-            <TextField
-              select
-              label="Event Type"
-              fullWidth
-              required
-              {...register("eventType", { required: "Event Type is required" })}
-            >
-              {eventTypes.map((item) => (
-                <MenuItem key={item} value={item}>
-                  {item}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              label="Organizer"
-              fullWidth
-              {...register("organizer", { required: "Organizer is required" })}
+          ) : ( console.log("Exhibition:", selectedExhibition),
+            <ExhibitionFormData
+              mode="update"
+              exhibition={selectedExhibition!}
+              onClose={handleClose}
             />
+          )
+        }
+          
+      </FormModal>
 
-            <TextField
-              label="Venue"
-              fullWidth
-              {...register("venue", { required: "Venue is required" })}
-            />
+      {!isError && exhibitionData && exhibitionData.length > 0 && (
+        <Grid container spacing={3}>
+          {exhibitionData.map((exhi: ExhibitionToApi) => (
+            <Grid key={exhi._id} size={{ xs: 12, sm: 6, md: 4 }}>
+              <ExhibitionCard
+                exhibition={exhi}
+                onEdit={handleEdit}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    </>
 
-            <TextField
-              label="City"
-              fullWidth
-              {...register("city", { required: "City is required" })}
-            />
+    // <Box sx={{ p: 4, bgcolor: "#f5f5f5" }}
+    //   component="form"
+    //   onSubmit={handleSubmit(onSubmit)}
+    // >
+    //   <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
+    //     <CardContent>
 
-            <TextField
-              label="State"
-              fullWidth
-              {...register("state", { required: "State is required" })}
-            />
+    //       <Typography
+    //         variant="h4"
+    //         sx={{ fontWeight: 700, mb: 3 }}
+    //       >
+    //         Add Exhibition
+    //       </Typography>
 
-            <TextField
-              label="Country"
-              fullWidth
-              {...register("country", { required: "Country is required" })}
-            />
+    //       <Divider sx={{ mb: 4 }} />
 
-            <TextField
-              type="date"
-              label="Start Date"
-              // InputLabelProps={{ shrink: true }}
-              fullWidth
-              {...register("startDate", { required: "Start Date is required" })}
-            />
+    //       <Box
+    //         sx={{
+    //           display: "grid",
+    //           gridTemplateColumns: {
+    //             xs: "1fr",
+    //             md: "1fr 1fr",
+    //           },
+    //           gap: 3,
+    //         }}
+    //       >
+    //         <TextField
+    //           label="Title"
+    //           fullWidth
+    //           required
+    //           {...register("title", { required: "Title is required" })}
+    //         />
 
-            <TextField
-              type="date"
-              label="End Date"
-              // InputLabelProps={{ shrink: true }}
-              fullWidth
-              {...register("endDate", { required: "End Date is required" })}
-            />
+    //         <TextField
+    //           select
+    //           label="Event Type"
+    //           fullWidth
+    //           required
+    //           {...register("eventType", { required: "Event Type is required" })}
+    //         >
+    //           {eventTypes.map((item) => (
+    //             <MenuItem key={item} value={item}>
+    //               {item}
+    //             </MenuItem>
+    //           ))}
+    //         </TextField>
 
-            <TextField
-              label="Achievement"
-              fullWidth
-              {...register("achievements", { required: "Achievement is required" })}
-            />
+    //         <TextField
+    //           label="Organizer"
+    //           fullWidth
+    //           {...register("organizer", { required: "Organizer is required" })}
+    //         />
 
-            {/* <TextField  
-              type="number"
-              label="Display Order"
-              fullWidth
-              {...register("displayOrder", { required: "Display Order is required" })}
-            /> */}
-          </Box>
+    //         <TextField
+    //           label="Venue"
+    //           fullWidth
+    //           {...register("venue", { required: "Venue is required" })}
+    //         />
 
-          <Box sx={{ mt: 3 }}>
-            <TextField
-              label="Description"
-              multiline
-              rows={5}
-              fullWidth
-              {...register("description", { required: "Description is required" })}
-            />
-          </Box>
+    //         <TextField
+    //           label="City"
+    //           fullWidth
+    //           {...register("city", { required: "City is required" })}
+    //         />
 
-          <Divider sx={{ my: 4 }} />
+    //         <TextField
+    //           label="State"
+    //           fullWidth
+    //           {...register("state", { required: "State is required" })}
+    //         />
 
-          <Typography
-            variant="h6"
-            sx={{ mb: 2 }}
-          >
-            Certificate Image
-          </Typography>
+    //         <TextField
+    //           label="Country"
+    //           fullWidth
+    //           {...register("country", { required: "Country is required" })}
+    //         />
 
-          <Button
-            variant="contained"
-            component="label"
-          >
-            Upload Certificate
-            <input hidden type="file" onChange={handleCertificateUpload} />
-          </Button>
+    //         <TextField
+    //           type="date"
+    //           label="Start Date"
+    //           // InputLabelProps={{ shrink: true }}
+    //           fullWidth
+    //           {...register("startDate", { required: "Start Date is required" })}
+    //         />
 
-          <Divider sx={{ my: 4 }} />
+    //         <TextField
+    //           type="date"
+    //           label="End Date"
+    //           // InputLabelProps={{ shrink: true }}
+    //           fullWidth
+    //           {...register("endDate", { required: "End Date is required" })}
+    //         />
 
-          <Typography
-            variant="h6"
-            sx={{ mb: 2 }}
-          >
-            Event Images
-          </Typography>
+    //         <TextField
+    //           label="Achievement"
+    //           fullWidth
+    //           {...register("achievements", { required: "Achievement is required" })}
+    //         />
 
-          <Button
-            variant="contained"
-            component="label"
-          >
-            Upload Event Images
-            <input hidden type="file" multiple onChange={handleEventImagesUpload} />
-          </Button>
+    //         {/* <TextField  
+    //           type="number"
+    //           label="Display Order"
+    //           fullWidth
+    //           {...register("displayOrder", { required: "Display Order is required" })}
+    //         /> */}
+    //       </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 2,
-              mt: 5,
-            }}
-          >
-            <Button variant="outlined">
-              Cancel
-            </Button>
+    //       <Box sx={{ mt: 3 }}>
+    //         <TextField
+    //           label="Description"
+    //           multiline
+    //           rows={5}
+    //           fullWidth
+    //           {...register("description", { required: "Description is required" })}
+    //         />
+    //       </Box>
 
-            <Button 
-              variant="contained"
-              type="submit"
-              disabled={mutation.isPending}  
-            >
-              {mutation.isPending ? "Submitting..." : "Submit"}
-            </Button>
-          </Box>
+    //       <Divider sx={{ my: 4 }} />
 
-        </CardContent>
-      </Card>
-    </Box>
+    //       <Typography
+    //         variant="h6"
+    //         sx={{ mb: 2 }}
+    //       >
+    //         Certificate Image
+    //       </Typography>
+
+    //       <Button
+    //         variant="contained"
+    //         component="label"
+    //       >
+    //         Upload Certificate
+    //         <input hidden type="file" onChange={handleCertificateUpload} />
+    //       </Button>
+
+    //       <Divider sx={{ my: 4 }} />
+
+    //       <Typography
+    //         variant="h6"
+    //         sx={{ mb: 2 }}
+    //       >
+    //         Event Images
+    //       </Typography>
+
+    //       <Button
+    //         variant="contained"
+    //         component="label"
+    //       >
+    //         Upload Event Images
+    //         <input hidden type="file" multiple onChange={handleEventImagesUpload} />
+    //       </Button>
+
+    //       <Box
+    //         sx={{
+    //           display: "flex",
+    //           justifyContent: "flex-end",
+    //           gap: 2,
+    //           mt: 5,
+    //         }}
+    //       >
+    //         <Button variant="outlined">
+    //           Cancel
+    //         </Button>
+
+    //         <Button 
+    //           variant="contained"
+    //           type="submit"
+    //           disabled={mutation.isPending}  
+    //         >
+    //           {mutation.isPending ? "Submitting..." : "Submit"}
+    //         </Button>
+    //       </Box>
+
+    //     </CardContent>
+    //   </Card>
+    // </Box>
   );
 }

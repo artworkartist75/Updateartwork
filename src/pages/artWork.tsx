@@ -7,84 +7,14 @@ import { useGetArtWork } from "../hooks/useArtwork";
 import { useState } from "react";
 import FormModal from "../utils/subformModel";
 import ArtworkFormData from "../components/artworkbtn"
-import ArtworkCard from "../components/artistCart";
-
-// const categories = [
-//   "Painting",
-//   "Sketch",
-//   "Digital Art",
-//   "Illustration",
-//   "Photography",
-//   "Sculpture",
-//   "Mixed Media",
-// ];
-
-// const status = ["Available", "Sold", "Reserved"];
-
+import ArtworkCard from "../components/artworkCart";
 
 export default function Artwork() {
 
-  // const defaultValues: ArtworkForm = {
-  //   title: "",
-  //   category: "",
-  //   medium: "",
-  //   yearCreated: new Date().getFullYear(),
-  //   tags: "",
-  //   description: "",
-  //   price: 0,
-  //   status: "Available",
-  //   images: [],
-  //   featuredWork: false,
-  //   isForSale: true,
-  // };
-
-  // const {
-  //     register,
-  //     handleSubmit,
-  //     setValue,
-  //   } = useForm<ArtworkForm>({
-  //     defaultValues,
-  //   });
-
-  // const handleArtWorkImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files) {
-  //     setValue("images", Array.from(e.target.files));
-  //   }
-  // };
-
-  // const onSubmit = (data: ArtworkForm) => {
-  //   console.log("Form Data:", data);
-  //   const formData = new FormData();
-    
-  //   formData.append("artist", "6a4807d5df0d709bdb5a9ece");
-  //   formData.append("title", data.title);
-  //   formData.append("category", data.category);
-  //   formData.append("medium", data.medium);
-  //   formData.append("yearCreated", data.yearCreated.toString());
-  //   formData.append("tags", data.tags);
-  //   formData.append("description", data.description);
-  //   formData.append("price", data.price.toString());
-  //   formData.append("status", data.status);
-  //   formData.append("featuredWork", data.featuredWork.toString());
-  //   formData.append("isForSale", data.isForSale.toString());
-
-  //   data.images.forEach((image) => {
-  //     formData.append(`images`, image);
-  //   });
-
-  //   mutation.mutate(formData, {
-  //     onSuccess: (response) => {
-  //       console.log("Artwork created successfully:", response);
-  //     },
-  //     onError: (error) => {
-  //       console.error("Error creating artwork:", error);
-  //     },
-  //   });
-
-  // }
   const {data: artworkData, isLoading, isError } = useGetArtWork();
   const [open, setOpen] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState<ArtworkToApi | null>(null);
+  const [artworkMode, setArtworkMode] = useState<"add" | "edit">("add");
   
   if (isLoading) {
     return <h2>Loading...</h2>;
@@ -96,16 +26,23 @@ export default function Artwork() {
     setOpen(false);
   }
   const handleEdit = (artwork: ArtworkToApi) => {
-      console.log("selected ",artwork);
-      setSelectedArtwork(artwork);
-      setOpen(true);
+    console.log("inside edit handle ");
+    setArtworkMode("edit");
+    console.log("edit handle ", artworkMode);
+    setSelectedArtwork(artwork);
+    setOpen(true);
   };
+  const handleCreate = () => {
+    console.log("inside create handle ");
+    setArtworkMode("add");
+    setOpen(true);
+  }
 
   return (
     <>
       <Button
           variant="contained"
-          onClick={() => setOpen(true)}
+          onClick={handleCreate}
       >
           Add Artwork
       </Button>
@@ -114,11 +51,24 @@ export default function Artwork() {
           open={open}
           title="Edit Artwork"
           onClose={handleClose}
-      >
-          <ArtworkFormData
-            mode="update"
-            artwork={selectedArtwork!}
-          />
+      > 
+        {
+          artworkMode === "add" ? 
+          (
+            console.log("Artwork add"),
+            <ArtworkFormData
+              mode="create"
+              onClose={handleClose}
+            />
+          ) : ( console.log("Artwork:", selectedArtwork),
+            <ArtworkFormData
+              mode="update"
+              artwork={selectedArtwork!}
+              onClose={handleClose}
+            />
+          )
+        }
+          
       </FormModal>
 
       <Grid container spacing={3}>

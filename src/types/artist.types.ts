@@ -39,8 +39,16 @@ export interface ArtistToApi {
   _id: string;
   name: string;
   profession: string;
-  profileImage: string;
-  coverImage: string;
+  profileImage: {
+    _id: string;
+    url: string;
+    publicId: string;
+  }[];
+  coverImage: {
+    _id: string;
+    url: string;
+    publicId: string;
+  }[];
   bio: string;
   shortBio: string;
   email: string;

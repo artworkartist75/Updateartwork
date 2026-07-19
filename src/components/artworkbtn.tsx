@@ -3,16 +3,22 @@ import {
   Button,
   Card,
   CardContent,
+  CardMedia,
   Checkbox,
   Divider,
   FormControlLabel,
+  Grid,
+  IconButton,
   MenuItem,
   TextField,
   Typography,
 } from "@mui/material";
-import type { ArtworkFormType, ArtworkToApi } from "../types/artwork.types";
-import { useForm } from "react-hook-form";
-import { useAddArtWork } from "../hooks/useArtwork";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { defaultValues, type ArtworkFormType, type ArtworkToApi } from "../types/artwork.types";
+import { Controller, useForm } from "react-hook-form";
+import { useAddArtWork, useUpdateArtwork } from "../hooks/useArtwork";
+import { useEffect, useState } from "react";
+import { createArtworkFormData } from "../utils/createArtworkFormData";
 
 const categories = [
   "Painting",
@@ -29,25 +35,19 @@ const status = ["Available", "Sold", "Reserved"];
 interface ArtworkFormProps {
   mode: "create" | "update";
   artwork?: ArtworkToApi;
+  onClose: () => void;
 }
 
-export default function ArtworkFormData({ mode, artwork } : ArtworkFormProps) {
-  const mutation = useAddArtWork();
+export default function ArtworkFormData({ mode, artwork, onClose } : ArtworkFormProps) {
+  const artworkCreate = useAddArtWork();
+  const artWorkUpdate = useUpdateArtwork()
   console.log(mode,artwork);
+  const [existingImages, setExistingImages] = useState(
+    artwork?.artworkImages ?? []
+  );
 
-  const defaultValues: ArtworkFormType = {
-    title: "",
-    category: "",
-    medium: "",
-    yearCreated: new Date().getFullYear(),
-    tags: "",
-    description: "",
-    price: 0,
-    status: "Available",
-    images: [],
-    featuredWork: false,
-    isForSale: true,
-  };
+  const [deletedImages, setDeletedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
   const mapArtworkToForm = (
     artwork: ArtworkToApi
@@ -66,51 +66,67 @@ export default function ArtworkFormData({ mode, artwork } : ArtworkFormProps) {
   });
 
   const {
-      register,
-      handleSubmit,
-      setValue,
-    } = useForm<ArtworkFormType>({
-      defaultValues:
-        mode === "create"
-          ? defaultValues
-          : mapArtworkToForm(artwork!),
-    });
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    control,
+    watch,
+  } = useForm<ArtworkFormType>({
+    defaultValues:
+      mode === "create"
+        ? defaultValues
+        : mapArtworkToForm(artwork!),
+  });
+  
+    console.log(watch("title"));
+  useEffect(() => {
+    if (artwork) {
+      reset(mapArtworkToForm(artwork));
+    }
+  }, [artwork, reset]);
 
   const handleArtWorkImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setValue("images", Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+      const updatedImages = [...selectedImages, ...files];
+      
+      setSelectedImages(updatedImages);
+      setValue("images", updatedImages);
     }
+  };
+  
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteExistingImage = (publicId: string) => {
+    setExistingImages((prev) =>
+      prev.filter((img) => img.publicId !== publicId)
+    );
+
+    setDeletedImages((prev) => [...prev, publicId]);
   };
 
   const onSubmit = (data: ArtworkFormType) => {
-    console.log("Form Data:", data);
-    const formData = new FormData();
-    
-    formData.append("artist", "6a4807d5df0d709bdb5a9ece");
-    formData.append("title", data.title);
-    formData.append("category", data.category);
-    formData.append("medium", data.medium);
-    formData.append("yearCreated", data.yearCreated.toString());
-    formData.append("tags", data.tags);
-    formData.append("description", data.description);
-    formData.append("price", data.price.toString());
-    formData.append("status", data.status);
-    formData.append("featuredWork", data.featuredWork.toString());
-    formData.append("isForSale", data.isForSale.toString());
+    console.log("Form Data on submit :", data);
+    console.log("mode on submit ", mode);
+    const formData = createArtworkFormData(data);
 
-    data.images.forEach((image) => {
-      formData.append(`images`, image);
-    });
-
-    mutation.mutate(formData, {
-      onSuccess: (response) => {
-        console.log("Artwork created successfully:", response);
-      },
-      onError: (error) => {
-        console.error("Error creating artwork:", error);
-      },
-    });
-
+    if(mode === "create"){
+      artworkCreate.mutate(formData,{
+        onSuccess:() => {
+          onClose();
+        },
+      });
+    }else{
+      formData.append("deletedImages",JSON.stringify(deletedImages));
+      artWorkUpdate.mutate({id: artwork!._id, artworkData:formData},{
+        onSuccess:() => {
+          onClose();
+        },
+      });
+    }
   }
 
   return (
@@ -154,19 +170,19 @@ export default function ArtworkFormData({ mode, artwork } : ArtworkFormProps) {
               {...register("title", { required: true })}
             />
 
-            <TextField
-              select
-              label="Category"
-              fullWidth
-              required
-              {...register("category", { required: true })}
-            >
-              {categories.map((item) => (
-                <MenuItem key={item} value={item}>
-                  {item}
-                </MenuItem>
-              ))}
-            </TextField>
+            <Controller
+              name="category"
+              control={control}
+              render={({ field }) => (
+                <TextField select fullWidth label="Category" {...field}>
+                  {categories.map((item) => (
+                    <MenuItem key={item} value={item}>
+                      {item}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
 
             <TextField
               label="Medium"
@@ -224,19 +240,25 @@ export default function ArtworkFormData({ mode, artwork } : ArtworkFormProps) {
               {...register("price", { valueAsNumber: true })}
             />
 
-            <TextField
-              select
-              label="Status"
-              defaultValue="Available"
-              fullWidth
-              {...register("status")}
-            >
-              {status.map((item) => (
-                <MenuItem key={item} value={item}>
-                  {item}
-                </MenuItem>
-              ))}
-            </TextField>
+            <Controller
+              name="status"
+              control={control}
+              render={({field}) => (
+                <TextField
+                  select
+                  label="Status"
+                  defaultValue="Available"
+                  fullWidth
+                  {...field}
+                >
+                  {status.map((item) => (
+                    <MenuItem key={item} value={item}>
+                      {item}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
           </Box>
 
           <Divider sx={{ my: 4 }} />
@@ -246,6 +268,61 @@ export default function ArtworkFormData({ mode, artwork } : ArtworkFormProps) {
           <Typography variant="h6" sx={{ mb: 2 }}>
             Artwork Images
           </Typography>
+
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            {existingImages?.map((image) => (
+              <Grid
+                key={image.publicId}
+                size={{ xs: 6, sm: 4, md: 3 }}
+              >
+                <Box sx={{ position: "relative" }}>
+                  <CardMedia
+                    component="img"
+                    height="180"
+                    image={image.url}
+                    sx={{ borderRadius: 2 }}
+                  />
+
+                  <IconButton
+                    color="error"
+                    size="small"
+                    onClick={() => handleDeleteExistingImage(image.publicId)}
+                    sx={{
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      bgcolor: "white",
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+
+          {selectedImages.map((image, index) => (
+            <Card key={index} sx={{ width: 150, position: "relative" }}>
+              <IconButton
+                color="error"
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: 5,
+                  right: 5,
+                }}
+                onClick={() => handleRemoveImage(index)}
+              >
+               <DeleteIcon />
+              </IconButton>
+
+              <CardMedia
+              component="img"
+             height="120"
+            image={URL.createObjectURL(image)}
+            />
+           </Card>
+          ))}
 
           <Button
             variant="contained"
@@ -257,27 +334,13 @@ export default function ArtworkFormData({ mode, artwork } : ArtworkFormProps) {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* <Typography variant="h6" sx={{ mb: 2 }}>
-            Artwork Video
-          </Typography>
-
-          <Button
-            variant="contained"
-            component="label"
-          >
-            Upload Video
-            <input hidden type="file" accept="video/*" />
-          </Button>
-
-          <Divider sx={{ my: 4 }} /> */}
-
           {/* Options */}
 
           <Typography variant="h6" sx={{ mb: 2 }}>
             Options
           </Typography>
 
-          <Box
+          {/* <Box
             sx={{
               display: "flex",
               gap: 4,
@@ -293,7 +356,39 @@ export default function ArtworkFormData({ mode, artwork } : ArtworkFormProps) {
               control={<Checkbox {...register("isForSale")} />}
               label="Available For Sale"
             />
-          </Box>
+          </Box> */}
+
+          <Controller
+            name="featuredWork"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                  />
+                }
+                label="Featured Artwork"
+              />
+            )}
+          />
+
+          <Controller
+            name="isForSale"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                  />
+                }
+                label="Available For Sale"
+              />
+            )}
+          />
 
           <Box
             sx={{
@@ -310,12 +405,15 @@ export default function ArtworkFormData({ mode, artwork } : ArtworkFormProps) {
             <Button 
               variant="contained"
               type="submit"
-              disabled={mutation.isPending}
+              disabled={ mode == "create" ? (artworkCreate.isPending) : (artWorkUpdate.isPending)}
             >
-              {mutation.isPending ? "Submitting..." : "Submit"}
+              {
+                mode == "create" ?
+                (artworkCreate.isPending ? "Submitting..." : "Submit"):
+                (artWorkUpdate.isPending ? "Updating..." : "Update") 
+              }
             </Button>
           </Box>
-
         </CardContent>
       </Card>
     </Box>

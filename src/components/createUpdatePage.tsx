@@ -15,7 +15,7 @@ import { useCreateArtist, useUpdateArtist } from "../hooks/useArtist";
 import { useForm, Controller } from "react-hook-form";
 import type { ArtistForm, ArtistToApi  } from "../types/artist.types";
 import { createArtistFormData } from "../utils/createArtistFormData";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ArtistFormProps {
   mode: "create" | "update";
@@ -25,7 +25,10 @@ interface ArtistFormProps {
 export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
   const createMutation = useCreateArtist();
   const updateMutation = useUpdateArtist();
-//   console.log("update : ",artist);
+  const [selectedProfile, setSelectedProfile] = useState<File[]>([]);
+  const [selectedCover, setSelectedCover] = useState<File[]>([]);
+
+  console.log("update : ",artist);
 
   const defaultValues: ArtistForm = {
     profileImage: null,
@@ -77,13 +80,16 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
 
   const handleProfileImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setValue("profileImage", e.target.files[0]);
+      const file = e.target.files[0];
+      setValue("profileImage", file);
+      setSelectedProfile([file]);
     }
   };
 
   const handleCoverImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setValue("coverImage", e.target.files[0]);
+      setSelectedCover([e.target.files[0]]);
     }
   };
 
@@ -135,8 +141,8 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
     } else {
         updateMutation.mutate(
             { 
-                id: artist!._id, 
-                artistData:formData 
+              id: artist!._id, 
+              artistData:formData 
             }
         );
     }
@@ -184,7 +190,22 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
                         gap: 2,
                     }}
                     >
-                    <Avatar sx={{ width: 90, height: 90 }} />
+                    {
+                      mode === "update" ? (
+                      <></>
+                      ) : (
+                        <Avatar sx={{ width: 90, height: 90 }} />
+                      )
+                    }
+                    {
+                      selectedProfile.length > 0 ? (selectedProfile.map((image,index) => (
+                        <Avatar 
+                          key={index}
+                          src={URL.createObjectURL(image)}
+                          sx={{ width: 90, height: 90 }} 
+                        />
+                      ))):(<Avatar sx={{ width: 90, height: 90 }} />)
+                    }
                     <input
                       hidden
                       type="file"
@@ -212,6 +233,24 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
                   >
                     Cover Image
                   </Typography>
+                  
+                  {
+                    mode === "update" ? (
+                      <></>
+                    ) : (
+                      <Avatar sx={{ width: 90, height: 90 }} />
+                    )
+                  }
+                  {
+                    selectedCover.length > 0 ? (selectedCover.map((image,index) => (
+                      <Avatar 
+                        key={index}
+                        src={URL.createObjectURL(image)}
+                        sx={{ width: 90, height: 90 }} 
+                      />
+                    ))):(<Avatar sx={{ width: 90, height: 90 }} />)
+                  }
+
                   <input
                     hidden
                     type="file"

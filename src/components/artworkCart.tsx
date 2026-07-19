@@ -1,5 +1,6 @@
 import { Card,CardMedia,CardContent,Typography,CardActions,Button } from '@mui/material';
 import type {ArtworkToApi} from '../types/artwork.types';
+import { useDeleteArtwork } from '../hooks/useArtwork';
 
 interface ArtworkCardProps {
   artwork: ArtworkToApi;
@@ -10,6 +11,11 @@ export default function ArtworkCard({
   artwork,
   onEdit,
 }: ArtworkCardProps) {
+  const {mutate: deleteArtworkonMutation, isPending: isDeleting,} = useDeleteArtwork()
+  console.log("artwork data: ", artwork);
+  const handleDelete = (id:string) => {
+    deleteArtworkonMutation(id);
+  }
   return (
     <Card>
       <CardMedia
@@ -42,8 +48,9 @@ export default function ArtworkCard({
 
         <Button
           color="error"
+          onClick={() => handleDelete(artwork!._id)}
         >
-          Delete
+          {isDeleting? "Deleting...": "Delete"}
         </Button>
       </CardActions>
     </Card>
