@@ -131,11 +131,11 @@ export default function ArtworkFormData({ mode, artwork, onClose } : ArtworkForm
 
   return (
     <Box 
-      sx={{ p: 4, bgcolor: "#f5f5f5" }}
+      sx={{ bgcolor: "#f5f5f5" }}
       component="form"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
+      <Card sx={{ maxWidth: 1000, mx: "auto" }}>
         <CardContent>
 
           <Typography
@@ -398,7 +398,10 @@ export default function ArtworkFormData({ mode, artwork, onClose } : ArtworkForm
               mt: 5,
             }}
           >
-            <Button variant="outlined">
+            <Button 
+              variant="outlined"
+              onClick={() => onClose()}
+            >
               Cancel
             </Button>
 

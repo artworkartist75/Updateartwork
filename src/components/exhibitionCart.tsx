@@ -22,7 +22,7 @@ export default function ExhibitionCard({
     <Card>
       <CardMedia
         component="img"
-        height={220}
+        height={200}
         image={exhibition.eventImages[0].url}
       />
 
@@ -36,15 +36,7 @@ export default function ExhibitionCard({
         </Typography>
 
         <Typography variant="body2">
-          {exhibition.city}
-        </Typography>
-
-        <Typography variant="body2">
-          {exhibition.state}
-        </Typography>
-
-        <Typography variant="body2">
-          {exhibition.country}
+          {exhibition.city}, {exhibition.state}, {exhibition.country}
         </Typography>
         
         <Typography variant="body2">

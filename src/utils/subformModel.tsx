@@ -19,7 +19,7 @@ export default function FormModal({
   title,
   onClose,
   children,
-  maxWidth = "md",
+  maxWidth = "lg",
 }: FormModalProps) {
   return (
     <Dialog
@@ -27,6 +27,7 @@ export default function FormModal({
       onClose={onClose}
       fullWidth
       maxWidth={maxWidth}
+      sx={{m:-3}}
     >
       <DialogTitle>
         {title}

@@ -20,7 +20,7 @@ export default function ArtworkCard({
     <Card>
       <CardMedia
         component="img"
-        height={220}
+        height={200}
         image={artwork.artworkImages[0].url}
       />
 

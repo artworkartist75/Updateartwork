@@ -40,7 +40,7 @@ export default function ArtistInfo({ artist }: Props) {
   console.log("Artist Info Component - Artist Data:", artist);
   const [open, setOpen] = useState(false);
   return (
-    <Container maxWidth="lg" sx={{ py: 5 }}>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
       {/* Cover */}
 
       <Box
@@ -48,7 +48,7 @@ export default function ArtistInfo({ artist }: Props) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: 400,
+          height: 300,
           borderRadius: 3,
           overflow: "hidden",
           mb: 8,
@@ -58,10 +58,9 @@ export default function ArtistInfo({ artist }: Props) {
           <img
             src={artist.coverImage[0].url}
             alt={artist.name}
-            width="70%"
+            width="100%"
             height="100%"
             style={{ objectFit: "cover" }}
-            
           />
         )}
       </Box>
@@ -219,7 +218,7 @@ export default function ArtistInfo({ artist }: Props) {
 
               <Divider sx={{ my: 2 }} />
 
-              <Stack spacing={2}>
+              <Stack spacing={2} sx={{mb:3}}>
 
                 <Box sx={{gap: 2, display: "flex"}}>
                   <FaEnvelope />
@@ -275,18 +274,18 @@ export default function ArtistInfo({ artist }: Props) {
                   : "No"}
               </Typography>
 
-              <Typography
+              {/* <Typography
                 variant="h5"
                 sx={{ mt: 5, fontWeight: 700 } }
               >
                 Social Media
               </Typography>
 
-              <Divider sx={{ my: 2 }} />
+              <Divider sx={{ my: 2 }} /> */}
 
               <Stack
                 direction="row"
-                sx={{ spacing: 2, fontSize: 26 }}
+                sx={{ spacing: 2, fontSize: 26, mt:2 }}
               >
                 {artist.socialLinks?.instagram && (
                   <Link
@@ -368,6 +367,7 @@ export default function ArtistInfo({ artist }: Props) {
       </Grid>
 
       <Button
+        sx={{mt:2}}
         variant="contained"
         onClick={() => setOpen(true)}
       >

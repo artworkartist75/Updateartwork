@@ -46,6 +46,7 @@ export default function UpdateArtistModal({
         <CreateUpdatePage
           mode="update"
           artist={artist}
+          onClose={onClose}
         />
       </DialogContent>
     </Dialog>

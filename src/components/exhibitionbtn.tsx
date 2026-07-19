@@ -185,11 +185,11 @@ export default function ExhibitionFormData({ mode, exhibition, onClose } : exhib
     };
 
   return (
-    <Box sx={{ p: 4, bgcolor: "#f5f5f5" }}
+    <Box sx={{ bgcolor: "#f5f5f5" }}
       component="form"
       onSubmit={handleSubmit(onSubmit)}
     >
-      <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
+      <Card sx={{ maxWidth: 1000, mx: "auto" }}>
         <CardContent>
 
           <Typography

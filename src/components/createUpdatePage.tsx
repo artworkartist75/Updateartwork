@@ -20,9 +20,10 @@ import { useEffect, useState } from "react";
 interface ArtistFormProps {
   mode: "create" | "update";
   artist?: ArtistToApi;
+  onClose : () => void
 }
 
-export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
+export default function CreateUpdatePage({ mode, artist, onClose } : ArtistFormProps) {
   const createMutation = useCreateArtist();
   const updateMutation = useUpdateArtist();
   const [selectedProfile, setSelectedProfile] = useState<File[]>([]);
@@ -143,6 +144,11 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
             { 
               id: artist!._id, 
               artistData:formData 
+            },
+            {
+              onSuccess: () => {
+                onClose(); // ✅ Close modal
+              },
             }
         );
     }
@@ -150,29 +156,28 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
 
   return (
     <> 
-    
-        <Box sx={{ p: 4, background: "#f5f5f5" }}
+        <Box sx={{ background: "#f5f5f5" }}
           component="form"
           onSubmit={handleSubmit(onSubmit)}
           >
-          <Card sx={{ maxWidth: 1200, mx: "auto", borderRadius: 3 }}>
+          <Card sx={{ maxWidth: 1200, mx: "auto", }}>
             <CardContent>
 
               <Typography
-                variant="h4"
+                variant="h5"
                 sx={{
                     fontWeight: 700,
-                    mb: 3,
+                    mb: 1,
                 }}
                 >
                 Update Artist Profile
               </Typography>
 
-              <Divider sx={{ mb: 4 }} />
+              <Divider sx={{ mb: 2 }} />
 
               {/* Images */}
 
-              <Grid container size={{ md: 4 }} spacing={3}> 
+              <Grid container size={{ md: 2 }} spacing={3}> 
                 <Grid size={{ xs: 12, md: 6 }} >
                   <Typography
                     variant="h6"
@@ -218,12 +223,12 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
                       component="label"
                       htmlFor="profileImage"
                     >
-                        Upload
+                      Upload
                     </Button>
-                    </Box>
+                  </Box>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 6 }} >
                   <Typography
                     variant="h6"
                     sx={{
@@ -233,7 +238,14 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
                   >
                     Cover Image
                   </Typography>
-                  
+                  <Box 
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                    }}
+                    >
+
                   {
                     mode === "update" ? (
                       <></>
@@ -262,13 +274,12 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
                     variant="contained"
                     component="label"
                     htmlFor="coverImage"
-                  >
-                      Upload Cover
+                    >
+                    Upload
                   </Button>
+                  </Box>
                 </Grid>
               </Grid>
-
-              <Divider sx={{ mb: 4 }} />
 
               {/* Basic */}
 
@@ -277,6 +288,7 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
                 sx={{
                   fontWeight: 600,
                   mb: 2,
+                  mt: 3
                 }}
               >
                 Basic Information
@@ -490,7 +502,9 @@ export default function CreateUpdatePage({ mode, artist } : ArtistFormProps) {
                   mt: 5,
                 }}
               >
-                <Button variant="outlined">
+                <Button variant="outlined"
+                  onClick={() => onClose()}
+                >
                   Cancel
                 </Button>
 

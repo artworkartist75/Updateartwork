@@ -1,6 +1,7 @@
 import {
   Button,
-  Grid
+  Grid,
+  Box
 } from "@mui/material";
 import type { ArtworkToApi } from "../types/artwork.types";
 import { useGetArtWork } from "../hooks/useArtwork";
@@ -38,252 +39,96 @@ export default function Artwork() {
     setOpen(true);
   }
 
-  return (
-    <>
-      <Button
-          variant="contained"
-          onClick={handleCreate}
-      >
-          Add Artwork
-      </Button>
-
-      <FormModal
-          open={open}
-          title="Edit Artwork"
-          onClose={handleClose}
-      > 
-        {
-          artworkMode === "add" ? 
-          (
-            console.log("Artwork add"),
-            <ArtworkFormData
-              mode="create"
-              onClose={handleClose}
-            />
-          ) : ( console.log("Artwork:", selectedArtwork),
-            <ArtworkFormData
-              mode="update"
-              artwork={selectedArtwork!}
-              onClose={handleClose}
-            />
-          )
-        }
+  // return (
+  //   <>
+  //     <FormModal
+  //         open={open}
+  //         title="Edit Artwork"
+  //         onClose={handleClose}
+  //     > 
+  //       {
+  //         artworkMode === "add" ? 
+  //         (
+  //           console.log("Artwork add"),
+  //           <ArtworkFormData
+  //             mode="create"
+  //             onClose={handleClose}
+  //           />
+  //         ) : ( console.log("Artwork:", selectedArtwork),
+  //           <ArtworkFormData
+  //             mode="update"
+  //             artwork={selectedArtwork!}
+  //             onClose={handleClose}
+  //           />
+  //         )
+  //       }
           
-      </FormModal>
+  //     </FormModal>
 
-      <Grid container spacing={3}>
-        {artworkData.map((art: ArtworkToApi) => (
-          <Grid key={art._id} size={{ xs: 12, sm: 6, md: 4 }}>
-            <ArtworkCard artwork={art} onEdit={handleEdit} />
-          </Grid>
-        ))}
-      </Grid>
+  //     <Grid container spacing={3}>
+  //       {artworkData.map((art: ArtworkToApi) => (
+  //         <Grid key={art._id} size={{ xs: 6, sm: 6, md: 4 }}>
+  //           <ArtworkCard artwork={art} onEdit={handleEdit} />
+  //         </Grid>
+  //       ))}
+  //     </Grid>
 
-    </>
-    // <Box 
-    //   sx={{ p: 4, bgcolor: "#f5f5f5" }}
-    //   component="form"
-    //   onSubmit={handleSubmit(onSubmit)}
-    // >
-    //   <Card sx={{ maxWidth: 1000, mx: "auto", borderRadius: 3 }}>
-    //     <CardContent>
+  //     <Button
+  //         variant="contained"
+  //         onClick={handleCreate}
+  //         sx={{mb:"auto", mt:2}}
+  //     >
+  //       Add Artwork
+  //     </Button>
 
-    //       <Typography
-    //         variant="h4"
-    //         sx={{ fontWeight: 700, mb: 3 }}
-    //       >
-    //         Add Artwork
-    //       </Typography>
+  //   </>
+  // );
+  return (
+  <>
+    <FormModal
+      open={open}
+      title={artworkMode === "add" ? "Add Artwork" : "Edit Artwork"}
+      onClose={handleClose}
+    >
+      {artworkMode === "add" ? (
+        <ArtworkFormData
+          mode="create"
+          onClose={handleClose}
+        />
+      ) : (
+        <ArtworkFormData
+          mode="update"
+          artwork={selectedArtwork!}
+          onClose={handleClose}
+        />
+      )}
+    </FormModal>
 
-    //       <Divider sx={{ mb: 4 }} />
+    <Grid container spacing={3} sx={{mt:2}}>
+      {artworkData.map((art: ArtworkToApi) => (
+        <Grid key={art._id} size={{ xs: 6, sm: 6, md: 4 }}>
+          <ArtworkCard
+            artwork={art}
+            onEdit={handleEdit}
+          />
+        </Grid>
+      ))}
+    </Grid>
 
-    //       {/* Basic Information */}
-
-    //       <Typography variant="h6" sx={{ mb: 2 }}>
-    //         Basic Information
-    //       </Typography>
-
-    //       <Box
-    //         sx={{
-    //           display: "grid",
-    //           gridTemplateColumns: {
-    //             xs: "1fr",
-    //             md: "1fr 1fr",
-    //           },
-    //           gap: 3,
-    //         }}
-    //       >
-    //         <TextField
-    //           label="Artwork Title"
-    //           fullWidth
-    //           required
-    //           {...register("title", { required: true })}
-    //         />
-
-    //         <TextField
-    //           select
-    //           label="Category"
-    //           fullWidth
-    //           required
-    //           {...register("category", { required: true })}
-    //         >
-    //           {categories.map((item) => (
-    //             <MenuItem key={item} value={item}>
-    //               {item}
-    //             </MenuItem>
-    //           ))}
-    //         </TextField>
-
-    //         <TextField
-    //           label="Medium"
-    //           fullWidth
-    //           placeholder="Oil on Canvas"
-    //           {...register("medium")}
-    //         />
-
-    //         <TextField
-    //           label="Year Created"
-    //           type="number"
-    //           fullWidth
-    //           {...register("yearCreated", { valueAsNumber: true })}
-    //         />
-
-    //         <TextField
-    //           label="Tags"
-    //           fullWidth
-    //           placeholder="Nature, Portrait, Modern"
-    //           {...register("tags")}
-    //         />
-    //       </Box>
-
-    //       <Box sx={{ mt: 3 }}>
-    //         <TextField
-    //           label="Description"
-    //           multiline
-    //           rows={5}
-    //           fullWidth
-    //           required
-    //           {...register("description", { required: true })}
-    //         />
-    //       </Box>
-
-    //       <Divider sx={{ my: 4 }} />
-
-    //       <Typography variant="h6" sx={{ mb: 2 }}>
-    //         Pricing
-    //       </Typography>
-
-    //       <Box
-    //         sx={{
-    //           display: "grid",
-    //           gridTemplateColumns: {
-    //             xs: "1fr",
-    //             md: "1fr 1fr",
-    //           },
-    //           gap: 3,
-    //         }}
-    //       >
-    //         <TextField
-    //           label="Price"
-    //           type="number"
-    //           fullWidth
-    //           {...register("price", { valueAsNumber: true })}
-    //         />
-
-    //         <TextField
-    //           select
-    //           label="Status"
-    //           defaultValue="Available"
-    //           fullWidth
-    //           {...register("status")}
-    //         >
-    //           {status.map((item) => (
-    //             <MenuItem key={item} value={item}>
-    //               {item}
-    //             </MenuItem>
-    //           ))}
-    //         </TextField>
-    //       </Box>
-
-    //       <Divider sx={{ my: 4 }} />
-
-    //       {/* Upload */}
-
-    //       <Typography variant="h6" sx={{ mb: 2 }}>
-    //         Artwork Images
-    //       </Typography>
-
-    //       <Button
-    //         variant="contained"
-    //         component="label"
-    //       >
-    //         Upload Images
-    //         <input hidden type="file" multiple onChange={handleArtWorkImage} />
-    //       </Button>
-
-    //       <Divider sx={{ my: 4 }} />
-
-    //       {/* <Typography variant="h6" sx={{ mb: 2 }}>
-    //         Artwork Video
-    //       </Typography>
-
-    //       <Button
-    //         variant="contained"
-    //         component="label"
-    //       >
-    //         Upload Video
-    //         <input hidden type="file" accept="video/*" />
-    //       </Button>
-
-    //       <Divider sx={{ my: 4 }} /> */}
-
-    //       {/* Options */}
-
-    //       <Typography variant="h6" sx={{ mb: 2 }}>
-    //         Options
-    //       </Typography>
-
-    //       <Box
-    //         sx={{
-    //           display: "flex",
-    //           gap: 4,
-    //           flexWrap: "wrap",
-    //         }}
-    //       >
-    //         <FormControlLabel
-    //           control={<Checkbox {...register("featuredWork")} />}
-    //           label="Featured Artwork"
-    //         />
-
-    //         <FormControlLabel
-    //           control={<Checkbox {...register("isForSale")} />}
-    //           label="Available For Sale"
-    //         />
-    //       </Box>
-
-    //       <Box
-    //         sx={{
-    //           display: "flex",
-    //           justifyContent: "flex-end",
-    //           gap: 2,
-    //           mt: 5,
-    //         }}
-    //       >
-    //         <Button variant="outlined">
-    //           Cancel
-    //         </Button>
-
-    //         <Button 
-    //           variant="contained"
-    //           type="submit"
-    //           disabled={mutation.isPending}
-    //         >
-    //           {mutation.isPending ? "Submitting..." : "Submit"}
-    //         </Button>
-    //       </Box>
-
-    //     </CardContent>
-    //   </Card>
-    // </Box>
-  );
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        mt: 3,
+      }}
+    >
+      <Button
+        variant="contained"
+        onClick={handleCreate}
+      >
+        Add Artwork
+      </Button>
+    </Box>
+  </>
+);
 }
