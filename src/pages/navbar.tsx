@@ -22,7 +22,7 @@ export default function Navbar() {
     { label: "Artist", path: "/artist" },
     { label: "Artworks", path: "/artworks" },
     { label: "Exhibitions", path: "/exhibitions" },
-    { label: "Collaborations", path: "/collaborations" },
+    // { label: "Collaborations", path: "/collaborations" },
   ];
 
   return (
